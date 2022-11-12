@@ -36,7 +36,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
 
     await writeFile(pathJoin(CONTROLLERS_DIR, `${title}.controller.js`), `
   const ${title}Service = require('../services/${title}');
-  const Service = new ${title}Service();
+  const service = new ${title}Service();
   
   class ${title}Controller {
   
@@ -45,7 +45,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
         }${title}(req, res, next) {
     let input = req.body;
     console.log(input)
-    const result = await ${title}Service.create${title}(input)
+    const result = await service.create${title}(input)
 
     if (result) {
         res.send(result);
