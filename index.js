@@ -26,7 +26,6 @@ const { writeFile, ensureDir, pathExists } = pkg;
 
     const title = ordersSwagger.info.title.toLowerCase();
 
-    console.log(ordersSwagger.paths["/order"])
 
 
     const APP_ROOT_DIR = pathJoin(process.cwd());
@@ -48,12 +47,12 @@ const { writeFile, ensureDir, pathExists } = pkg;
     const result = await service.create${title}(input)
 
     if (result) {
-        res.send(result);
+        res.send("${ordersSwagger.paths["/order"].post.responses[200].description}");
 
     } else {
 
-        res.send("error")
-    }
+        res.send("${ordersSwagger.paths["/order"].post.responses[400].description}")
+        }
 
 }
   

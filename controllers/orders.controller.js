@@ -11,12 +11,12 @@
     const result = await service.createorders(input)
 
     if (result) {
-        res.send(result);
+        res.send("Successful response");
 
     } else {
 
-        res.send("error")
-    }
+        res.send("Bad Request")
+        }
 
 }
   
