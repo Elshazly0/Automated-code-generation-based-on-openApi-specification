@@ -1,0 +1,87 @@
+openapi: 3.0.0
+info:
+  title: Location Reviews
+  description: This is a service to get and post location reviews
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /reviews:
+    get:
+      summary: Returns the list of all the reviews
+      responses:
+        "200":
+          description: The list of the reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/review"
+
+    post:
+      summary: Create a new review
+      requestBody:
+        x-name: body
+        content:
+          application/json:
+            schema:
+              required:
+                - review
+              properties:
+                location:
+                  type: string
+                  description: the location of the review
+                review:
+                  type: string
+                  description: the location of the review
+      responses:
+        200:
+          description: The reviews was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/review"
+  /reviews/id:
+    get:
+      description: Use this API to fetch reviews of specific location using id
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The review id
+      responses:
+        "200":
+          description: locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/review"
+
+components:
+  schemas:
+    review:
+      type: object
+      required:
+        - location
+        - review
+      properties:
+        _id:
+          type: string
+          description: The auto-generated id of the review
+        location:
+          type: string
+          description: The location
+        review:
+          type: string
+          description: The review
+      example:
+        id: d5fE_asz
+        location: The New Turing Omnibus
+        review: Alexander K. Dewdney

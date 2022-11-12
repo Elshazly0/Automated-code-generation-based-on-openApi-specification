@@ -1,0 +1,111 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Orders Service",
+    "title": "Orders",
+    "version": "1.0.0"
+  },
+  "produces": ["application/json"],
+  "consumes": ["application/json"],
+  "paths": {
+    "/order": {
+      "post": {
+        "consumes": ["application/json"],
+        "description": "Request to create a new order.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateOrderDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/OrderSchema"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Order": {
+      "description": "An order object.",
+      "properties": {
+        "product_id": {
+          "description": "The unique internal product uuid.",
+          "type": "string"
+        },
+        "product_name": {
+          "description": "The product name.",
+          "type": "string"
+        }
+      },
+      "title": "Order",
+      "type": "object"
+    },
+    "CreateOrderDto": {
+      "description": "A collection of orders.",
+      "items": {
+        "properties": {
+          "product_id": {
+            "description": "The unique internal product uuid.",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "The quantity requested for each product.",
+            "type": "string"
+          }
+        },
+        "required": ["product_id", "quantity"]
+      },
+      "type": "array"
+    },
+    "OrderSchema": {
+      "allOf": [
+        {
+          "properties": {
+            "order_id": {
+              "description": "The unique internal order uuid.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "$ref": "#/definitions/Order"
+        },
+        {
+          "properties": {
+            "created_by": {
+              "description": "Id from the user who created it",
+              "type": "string"
+            },
+            "created_at": {
+              "description": "The partner created date/time stamp",
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_by": {
+              "description": "Id from the user who updated it",
+              "type": "string"
+            },
+            "updated_at": {
+              "description": "The partner updated date/time stamp",
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      ],
+      "required": ["order_id"]
+    }
+  }
+}
