@@ -18,7 +18,11 @@
   "nodemonConfig": {
     "ignore": [
       "controllers/orders.controller.js",
-      "services/orders.service.js"
+      "controllers/locationreviews.controller.js",
+      "services/orders.service.js",
+      "services/locationreviews.service.js",
+      "routes/orders.routes.js",
+      "routes/locationreviews.routes.js"
     ],
     "delay": "2"
   }

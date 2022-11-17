@@ -1,111 +1,128 @@
 {
-  "swagger": "2.0",
+  "openapi": "3.0.0",
   "info": {
-    "description": "Orders Service",
-    "title": "Orders",
+    "title": "LocationReviews",
+    "description": "This is a service to get and post location reviews",
     "version": "1.0.0"
   },
-  "produces": ["application/json"],
-  "consumes": ["application/json"],
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
   "paths": {
-    "/order": {
+    "/reviews": {
+      "get": {
+        "summary": "Returns the list of all the reviews",
+        "responses": {
+          "200": {
+            "description": "The list of the reviews",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/review"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
-        "consumes": ["application/json"],
-        "description": "Request to create a new order.",
+        "summary": "Create a new review",
+        "requestBody": {
+          "x-name": "body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": ["review"],
+                "properties": {
+                  "location": {
+                    "type": "string",
+                    "description": "the location of the review"
+                  },
+                  "review": {
+                    "type": "string",
+                    "description": "the location of the review"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The reviews was successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/review"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reviews/id": {
+      "get": {
+        "description": "Use this API to fetch reviews of specific location using id",
         "parameters": [
           {
-            "in": "body",
-            "name": "body",
-            "required": true,
+            "in": "query",
+            "name": "id",
             "schema": {
-              "$ref": "#/definitions/CreateOrderDto"
-            }
+              "type": "string"
+            },
+            "required": true,
+            "description": "The review id"
           }
         ],
         "responses": {
           "200": {
-            "description": "Successful response",
-            "schema": {
-              "$ref": "#/definitions/OrderSchema"
+            "description": "locations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/review"
+                  }
+                }
+              }
             }
-          },
-          "400": {
-            "description": "Bad Request"
           }
         }
       }
     }
   },
-  "definitions": {
-    "Order": {
-      "description": "An order object.",
-      "properties": {
-        "product_id": {
-          "description": "The unique internal product uuid.",
-          "type": "string"
-        },
-        "product_name": {
-          "description": "The product name.",
-          "type": "string"
-        }
-      },
-      "title": "Order",
-      "type": "object"
-    },
-    "CreateOrderDto": {
-      "description": "A collection of orders.",
-      "items": {
+  "components": {
+    "schemas": {
+      "review": {
+        "type": "object",
+        "required": ["location", "review"],
         "properties": {
-          "product_id": {
-            "description": "The unique internal product uuid.",
-            "type": "string"
+          "_id": {
+            "type": "string",
+            "description": "The auto-generated id of the review"
           },
-          "quantity": {
-            "description": "The quantity requested for each product.",
-            "type": "string"
+          "location": {
+            "type": "string",
+            "description": "The location"
+          },
+          "review": {
+            "type": "string",
+            "description": "The review"
           }
         },
-        "required": ["product_id", "quantity"]
-      },
-      "type": "array"
-    },
-    "OrderSchema": {
-      "allOf": [
-        {
-          "properties": {
-            "order_id": {
-              "description": "The unique internal order uuid.",
-              "type": "string"
-            }
-          }
-        },
-        {
-          "$ref": "#/definitions/Order"
-        },
-        {
-          "properties": {
-            "created_by": {
-              "description": "Id from the user who created it",
-              "type": "string"
-            },
-            "created_at": {
-              "description": "The partner created date/time stamp",
-              "type": "string",
-              "format": "date-time"
-            },
-            "updated_by": {
-              "description": "Id from the user who updated it",
-              "type": "string"
-            },
-            "updated_at": {
-              "description": "The partner updated date/time stamp",
-              "type": "string",
-              "format": "date-time"
-            }
-          }
+        "example": {
+          "id": "d5fE_asz",
+          "location": "The New Turing Omnibus",
+          "review": "Alexander K. Dewdney"
         }
-      ],
-      "required": ["order_id"]
+      }
     }
   }
 }
