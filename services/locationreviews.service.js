@@ -1,30 +1,24 @@
 
-const reviewModel = require('../Models/review')
+const locationreviewsModel = require('../models/review')
 
-class ReviewService {
-
-
-    async getReviews() {
-        return await reviewModel.find({});
-    }
-
-    async getReview(id) {
-        return await reviewModel.findById(id);
-    }
+class locationreviewsService {
+ 
 
 
-    async createReview(review) {
-
-        const Review = new reviewModel(review);
-        return await Review.save();
-
-    }
-    async deleteReview(id) {
-        return await reviewModel.findByIdAndDelete(id);
-    }
-
+    
+async getlocationreviews(req, res, next) {
+    return await locationreviewsModel.find({});
+}
+                        
+async postlocationreviews(req, res, next) {
+    const newlocationreviews = new reviewModel(review);
+    return await newlocationreviews.save();
+}
+                        
+async getlocationreviews(req, res, next) {
+    return await locationreviewsModel.findById(id);
+}
+                        
 }
 
-
-
-module.exports = ReviewService;
+module.exports = locationreviewsService;

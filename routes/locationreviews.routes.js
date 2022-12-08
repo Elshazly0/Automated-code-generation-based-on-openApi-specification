@@ -1,10 +1,10 @@
 
-    const express = require('express');
-    const locationreviewscontroller = require('../controllers/locationreviews.controller.js');
-    const router = express.Router();
-    const locationreviewsController = new locationreviewscontroller();
-    const reviewValidator = require('../validation/review')
-    const { validate } = require('express-validation');
+const express = require('express');
+const locationreviewscontroller = require('../controllers/locationreviews.controller.js');
+const router = express.Router();
+const locationreviewsController = new locationreviewscontroller();
+const reviewValidator = require('../validation/review')
+const { validate } = require('express-validation');
 
 
 

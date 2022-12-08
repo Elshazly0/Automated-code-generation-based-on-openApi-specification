@@ -1,6 +1,5 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-
 import pkg from 'fs-extra';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { join as pathJoin } from 'path';
@@ -26,11 +25,14 @@ const { writeFile, ensureDir, pathExists } = pkg;
 
 
 
-    const paths = Object.keys(ordersSwagger.paths);
-    const firstPath = ordersSwagger.paths[Object.keys(ordersSwagger.paths)];
+    const paths = await Object.keys(ordersSwagger.paths);
+    const firstPath = await ordersSwagger.paths[Object.keys(ordersSwagger.paths)];
     // const firstPathmethod = Object.keys(firstPath)[0]
+    const path = ordersSwagger.paths[Object.keys(ordersSwagger.paths)[0]];
+    const first = path[Object.keys(path)[0]]
+    //console.log(Object.keys(first))
 
-    //console.log(ordersSwagger)
+    //console.log(ordersSwagger.paths["/reviews"].get.responses[200].content)
 
 
     const title = ordersSwagger.info.title.toLowerCase();
@@ -42,120 +44,157 @@ const { writeFile, ensureDir, pathExists } = pkg;
 
 
 
+
     await writeFile(pathJoin(CONTROLLERS_DIR, `${title}.controller.js`), `
+const ${title}Service = require('../services/${title}.service');
+const service = new ${title}Service();
 
-      const ${title}Service = require('../services/${title}.service');
-      const service = new ${title}Service();
 
-      class ${title}Controller {
+class ${title}Controller {
 
       
 
-        ${(function fun() {
+        ${(function CreateController() {
             let result = ""
             for (let i = 0; i < paths.length; i++) {
                 const path = ordersSwagger.paths[Object.keys(ordersSwagger.paths)[i]]
-                //console.log(path)
+
 
                 for (let j = 0; j < Object.keys(path).length; j++) {
-                    console.log(path[Object.keys(path)[j]])
-                    console.log(Object.keys(path)[j])
+                    const first = path[Object.keys(path)[j]]
+                    console.log(first)
 
-
+                    // console.log(path[Object.keys(path)[j]])
+                    console.log((Object.keys(path)[j]))
 
                     if (Object.keys(path)[j] == "get") {
-                        result = result.concat(`
 
-                        async ${Object.keys(path)[j]}${title}(req, res, next) {
-                            const result = await reviewService.getReviews();
-                    
-                            if (reviews) {
-                                res.send(reviews)
-                    
+                        let parameters = ""
+                        let id = ""
+                        for (let z = 0; z < Object.keys(first).length; z++) {
+
+                            if (Object.keys(first)[z] == "parameters") {
+
+                                id = id.concat(`id`);
+                                parameters = parameters.concat(`const id = req.query.id;`);
                             }
                         }
+                        result = result.concat(`
+    async ${Object.keys(path)[j]}${title}(req, res, next) {
+        ${parameters}
+        const result = await ${title}Service.get${title}(${id});
                         
-                        `)
+        if (result) {
+            res.send(result)
+                        
+        }else {
+
+            res.send("error")
+        }
+    }
+                            `)
                     }
 
 
+                    if (Object.keys(path)[j] == "post") {
+
+
+                        result = result.concat(`
+    async ${Object.keys(path)[j]}${title}(req, res, next) {
+
+        let body = req.body;
+        
+        const result = await reviewService.createReview(body)
+
+        if (result) {
+            res.send(result);
+
+        } else {
+
+            res.send("error")
+        }
+    
+    }
+                            `)
+                    }
                 }
-
             }
-
             return result
+
         })()}
 
 
 
-
-          async ${title}(req, res, next) {
-        let input = req.body;
-        console.log(input)
-        const result = await service.create${title}(input)
-
-        if (result) {
-            res.send("");
-
-        } else {
-
-            res.send("")
-            }
-
-    }
+}
+module.exports = ${title}Controller;
+`    );
 
 
-      }
-
-    module.exports = ${title}Controller;
-    `
-
-
-
-    );
 
     await writeFile(pathJoin(SERVICES_DIR, `${title}.service.js`), `
-const reviewModel = require('../Models/review')
+const ${title}Model = require('../models/review')
 
-class ReviewService {
-
-
-    async getReviews() {
-        return await reviewModel.find({});
-    }
-
-    async getReview(id) {
-        return await reviewModel.findById(id);
-    }
+class ${title}Service {
+ 
 
 
-    async createReview(review) {
+    ${(function CreateService() {
+            let result = ""
+            for (let i = 0; i < paths.length; i++) {
+                const path = ordersSwagger.paths[Object.keys(ordersSwagger.paths)[i]]
 
-        const Review = new reviewModel(review);
-        return await Review.save();
 
-    }
-    async deleteReview(id) {
-        return await reviewModel.findByIdAndDelete(id);
-    }
+                for (let j = 0; j < Object.keys(path).length; j++) {
+                    const first = path[Object.keys(path)[j]]
+                    console.log(first)
 
+                    // console.log(path[Object.keys(path)[j]])
+                    console.log((Object.keys(path)[j]))
+                    let parameters
+                    if (Object.keys(path)[j] == "get") {
+
+                        for (let z = 0; z < Object.keys(first).length; z++) {
+
+                            if (Object.keys(first)[z] == "parameters") {
+                                parameters = `return await ${title}Model.findById(id);`
+                            }
+                        }
+                        result = result.concat(`
+async ${Object.keys(path)[j]}${title}(req, res, next) {
+    ${parameters ? parameters : `return await ${title}Model.find({});`}
+}
+                        `)
+                    }
+                    if (Object.keys(path)[j] == "post") {
+
+
+                        result = result.concat(`
+async ${Object.keys(path)[j]}${title}(req, res, next) {
+    const new${title} = new reviewModel(review);
+    return await new${title}.save();
+}
+                        `)
+                    }
+                }
+            }
+            return result
+
+        })()}
 }
 
-
-
-module.exports = ReviewService;
+module.exports = ${title}Service;
 `);
 
 
 
 
     await writeFile(pathJoin(ROUTES_DIR, `${title}.routes.js`), `
-    const express = require('express');
-    const ${title}controller = require('../controllers/${title}.controller.js');
-    const router = express.Router();
-    const ${title}Controller = new ${title}controller();
-    const reviewValidator = require('../validation/review')
-    const { validate } = require('express-validation');
+const express = require('express');
+const ${title}controller = require('../controllers/${title}.controller.js');
+const router = express.Router();
+const ${title}Controller = new ${title}controller();
+const reviewValidator = require('../validation/review')
+const { validate } = require('express-validation');
 
 
 
@@ -174,7 +213,8 @@ module.exports = ReviewService;
             }
 
             return result
-        })()}
+        })()
+        }
 
 
 
