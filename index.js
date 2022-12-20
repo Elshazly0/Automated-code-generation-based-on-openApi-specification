@@ -4,7 +4,8 @@ import pkg from 'fs-extra';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { join as pathJoin } from 'path';
 import { doesNotMatch } from "assert";
-const ordersSwagger = require('./openapi.json')
+import { Console } from "console";
+const ordersSwagger = require('./swaggerFiles/FullDocumantation.json')
 
 
 const { writeFile, ensureDir, pathExists } = pkg;
@@ -26,6 +27,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
 
 
     const paths = await Object.keys(ordersSwagger.paths);
+    //  console.log(ordersSwagger)
     const firstPath = await ordersSwagger.paths[Object.keys(ordersSwagger.paths)];
     // const firstPathmethod = Object.keys(firstPath)[0]
     const path = ordersSwagger.paths[Object.keys(ordersSwagger.paths)[0]];
@@ -41,69 +43,85 @@ const { writeFile, ensureDir, pathExists } = pkg;
     const CONTROLLERS_DIR = pathJoin(APP_ROOT_DIR, 'controllers');
     const ROUTES_DIR = pathJoin(APP_ROOT_DIR, 'routes');
     const SERVICES_DIR = pathJoin(APP_ROOT_DIR, 'services');
+    const VALIDATION_DIR = pathJoin(APP_ROOT_DIR, 'validation');
 
 
 
+    let pathname;
+    for (let i = 0; i < ordersSwagger.tags.length; i++) {
+        pathname = ordersSwagger.tags[i].name
+        let thisControllerPaths = [];
+        // console.log(ordersSwagger.paths)
+        for (let j = 0; j < paths.length; j++) {
+            // console.log(Object.keys(ordersSwagger.paths)[j].slice(1, pathname.length + 1))
 
-    await writeFile(pathJoin(CONTROLLERS_DIR, `${title}.controller.js`), `
-const ${title}Service = require('../services/${title}.service');
-const service = new ${title}Service();
+            if (Object.keys(ordersSwagger.paths)[j].slice(1, pathname.length + 1) == `${pathname}`) {
+                thisControllerPaths.push(Object.keys(ordersSwagger.paths)[j])
+            }
+
+        }
+        //console.log(thisControllerPaths)
 
 
-class ${title}Controller {
+        await writeFile(pathJoin(CONTROLLERS_DIR, `${pathname}.controller.js`), `
+        const ${pathname}Service = require('../services/${pathname}.service');
+        const service = new ${pathname}Service();
+        
+        
+        class ${pathname}Controller {
+        
+              
+        
+                ${(function CreateController() {
+                let result = ""
 
-      
+                // console.log(paths)
+                for (let i = 0; i < thisControllerPaths.length; i++) {
+                    const first = ordersSwagger.paths[thisControllerPaths[i]]
 
-        ${(function CreateController() {
-            let result = ""
-            for (let i = 0; i < paths.length; i++) {
-                const path = ordersSwagger.paths[Object.keys(ordersSwagger.paths)[i]]
+                    for (let j = 0; j < Object.keys(first).length; j++) {
 
 
-                for (let j = 0; j < Object.keys(path).length; j++) {
-                    const first = path[Object.keys(path)[j]]
-                    console.log(first)
+                        //console.log(first[j])
 
-                    // console.log(path[Object.keys(path)[j]])
-                    console.log((Object.keys(path)[j]))
+                        if (Object.keys(first)[j] == "get") {
 
-                    if (Object.keys(path)[j] == "get") {
+                            let parameters = ""
+                            let id = ""
+                            let found = false
+                            if (first[Object.keys(first)[j]].hasOwnProperty("parameters")) {
+                                found = true
+                                // console.log(first[Object.keys(first)[j]])
+                                id = id.concat(`${first[Object.keys(first)[j]].parameters[0].name}`);
 
-                        let parameters = ""
-                        let id = ""
-                        for (let z = 0; z < Object.keys(first).length; z++) {
-
-                            if (Object.keys(first)[z] == "parameters") {
-
-                                id = id.concat(`id`);
-                                parameters = parameters.concat(`const id = req.query.id;`);
+                                parameters = parameters.concat(`const id = req.query.${id};`);
                             }
-                        }
-                        result = result.concat(`
-    async ${Object.keys(path)[j]}${title}(req, res, next) {
-        ${parameters}
-        const result = await ${title}Service.get${title}(${id});
-                        
+
+                            result = result.concat(`
+            async ${Object.keys(first)[j]}${pathname}${found ? `by${id}` : ""} (req, res, next) {
+                ${parameters}
+                const result = await ${pathname}Service.get${pathname}${found ? `by${id}` : ""} (${id});
+
         if (result) {
             res.send(result)
-                        
-        }else {
+
+        } else {
 
             res.send("error")
         }
     }
-                            `)
-                    }
+    `)
+                        }
 
 
-                    if (Object.keys(path)[j] == "post") {
+                        if (Object.keys(first)[j] == "post") {
 
 
-                        result = result.concat(`
-    async ${Object.keys(path)[j]}${title}(req, res, next) {
+                            result = result.concat(`
+            async ${Object.keys(first)[j]}${pathname} (req, res, next) {
 
         let body = req.body;
-        
+
         const result = await reviewService.createReview(body)
 
         if (result) {
@@ -113,77 +131,124 @@ class ${title}Controller {
 
             res.send("error")
         }
-    
+
     }
-                            `)
-                    }
-                }
-            }
-            return result
-
-        })()}
-
-
-
-}
-module.exports = ${title}Controller;
-`    );
-
-
-
-    await writeFile(pathJoin(SERVICES_DIR, `${title}.service.js`), `
-const ${title}Model = require('../models/review')
-
-class ${title}Service {
- 
-
-
-    ${(function CreateService() {
-            let result = ""
-            for (let i = 0; i < paths.length; i++) {
-                const path = ordersSwagger.paths[Object.keys(ordersSwagger.paths)[i]]
-
-
-                for (let j = 0; j < Object.keys(path).length; j++) {
-                    const first = path[Object.keys(path)[j]]
-                    console.log(first)
-
-                    // console.log(path[Object.keys(path)[j]])
-                    console.log((Object.keys(path)[j]))
-                    let parameters
-                    if (Object.keys(path)[j] == "get") {
-
-                        for (let z = 0; z < Object.keys(first).length; z++) {
-
-                            if (Object.keys(first)[z] == "parameters") {
-                                parameters = `return await ${title}Model.findById(id);`
-                            }
+    `)
                         }
-                        result = result.concat(`
-async ${Object.keys(path)[j]}${title}(req, res, next) {
-    ${parameters ? parameters : `return await ${title}Model.find({});`}
-}
-                        `)
-                    }
-                    if (Object.keys(path)[j] == "post") {
+                        if (Object.keys(first)[j] == "delete") {
 
 
-                        result = result.concat(`
-async ${Object.keys(path)[j]}${title}(req, res, next) {
-    const new${title} = new reviewModel(review);
-    return await new${title}.save();
-}
-                        `)
+                            result = result.concat(`
+            async ${Object.keys(first)[j]}${pathname} (req, res, next) {
+
+        const id = req.query.id;
+
+        const result = await reviewService.deleteReview(id);
+
+        if (result) {
+            res.send(result);
+
+        } else {
+
+            res.send("error")
+        }
+
+    }
+    `)
+                        }
                     }
                 }
-            }
-            return result
 
-        })()}
-}
+                return result
 
-module.exports = ${title}Service;
-`);
+
+            })()}
+        
+        
+        
+        }
+        module.exports = ${pathname}Controller;
+        `    );
+
+
+
+
+        await writeFile(pathJoin(SERVICES_DIR, `${pathname}.service.js`), `
+        const ${pathname}Model = require('../models/review')
+        
+        class ${pathname}Service {
+         
+        
+        
+            ${(function CreateService() {
+
+                let result = ""
+
+                // console.log(paths)
+                for (let i = 0; i < thisControllerPaths.length; i++) {
+                    const first = ordersSwagger.paths[thisControllerPaths[i]]
+
+                    for (let j = 0; j < Object.keys(first).length; j++) {
+                        //  console.log(Object.keys(first)[j])
+                        let parameters = ""
+                        if (Object.keys(first)[j] == "get") {
+
+
+                            let id = ""
+                            let found = false
+                            if (first[Object.keys(first)[j]].hasOwnProperty("parameters")) {
+                                found = true
+                                id = id.concat(`${first[Object.keys(first)[j]].parameters[0].name}`);
+
+                                parameters = parameters.concat(``);
+                            }
+
+                            result = result.concat(`
+        async ${Object.keys(first)[j]}${pathname}${found ? `by${id}` : ""}(${found ? `${id}` : ""}) {
+            ${parameters ? parameters : `return await ${pathname}Model.find({});`}
+        }
+                                `)
+                        }
+                        if (Object.keys(first)[j] == "post") {
+
+
+                            result = result.concat(`
+        async ${Object.keys(first)[j]}${pathname}(Object) {
+            const new${pathname} = new  ${pathname}Model(Object);
+            return await new${pathname}.save();
+        }
+                                `)
+                        }
+                        if (Object.keys(first)[j] == "delete") {
+                            result = result.concat(`
+        async ${Object.keys(first)[j]}${pathname}(id) {
+            return await ${pathname}Model.findByIdAndDelete(id);
+        
+                                }
+                                 `)
+
+                        }
+
+
+
+
+
+
+
+
+                    }
+                }
+
+                return result
+            })()}
+        }
+        
+        module.exports = ${pathname}Service;
+        `);
+
+
+
+    }
 
 
 
@@ -221,6 +286,83 @@ const { validate } = require('express-validation');
 
 module.exports = router;
 `);
+
+
+    await writeFile(pathJoin(VALIDATION_DIR, `${title}.validation.js`), `
+const joi = require('joi');
+
+const ${title}Validation = {
+        ${(function CreateValidation() {
+
+            let result = ""
+            for (let i = 0; i < paths.length; i++) {
+                const path = ordersSwagger.paths[Object.keys(ordersSwagger.paths)[i]]
+
+
+                for (let j = 0; j < Object.keys(path).length; j++) {
+                    const first = path[Object.keys(path)[j]]
+                    //console.log(first)
+
+
+
+
+                    // console.log((Object.keys(path)[j]))
+                    let parameters
+
+                    if (Object.keys(path)[j] == "post") {
+                        const one = path[Object.keys(path)[j]];
+
+                        if (one.hasOwnProperty('requestBody') == true) {
+
+                            if (one.requestBody.content.hasOwnProperty('application/json')) {
+
+                                if (one.requestBody.content['application/json'].schema.hasOwnProperty('required')) {
+                                    result = result.concat(`
+    create${one.requestBody.content['application/json'].schema.xml.name}: {
+                                        `)
+                                    const parameters = one.requestBody.content['application/json'].schema.required
+
+                                    for (let z = 0; z < parameters.length; z++) {
+                                        //console.log(one.requestBody.content['application/json'].schema.xml.name)
+                                        const required = one.requestBody.content['application/json'].schema.properties
+                                        //console.log(required[parameters[0]])
+                                        result = result.concat(`
+        ${parameters[z]}: joi.${required[parameters[z]].type}().required(),`)
+
+
+
+                                    }
+
+                                    result = result.concat(`
+                                
+    }
+        
+                                        `)
+
+                                }
+
+                            }
+                        } else if (one.hasOwnProperty('parameters')) {
+                            for (let z = 0; z < one.parameters; z++) {
+
+                            }
+                        }
+
+
+                    }
+                }
+            }
+            return result
+
+
+        })()
+        }
+}
+module.exports = ${title}Validation;
+`    );
+
+
+
 
 
 })();

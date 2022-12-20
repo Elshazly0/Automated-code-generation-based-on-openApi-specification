@@ -17,12 +17,20 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "controllers/orders.controller.js",
+      "controllers/petstore.controller.js",
+      "controllers/pet.controller.js",
+      "controllers/store.controller.js",
+      "controllers/user.controller.js",
       "controllers/locationreviews.controller.js",
-      "services/orders.service.js",
+      "services/petstore.service.js",
       "services/locationreviews.service.js",
-      "routes/orders.routes.js",
-      "routes/locationreviews.routes.js"
+      "services/pet.service.js",
+      "services/user.service.js",
+      "services/store.service.js",
+      "routes/petstore.routes.js",
+      "routes/locationreviews.routes.js",
+      "validation/locationreviews.validation.js",
+      "validation/petstore.validation.js"
     ],
     "delay": "2"
   }

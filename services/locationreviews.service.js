@@ -6,16 +6,16 @@ class locationreviewsService {
 
 
     
-async getlocationreviews(req, res, next) {
+async getlocationreviews() {
     return await locationreviewsModel.find({});
 }
                         
-async postlocationreviews(req, res, next) {
-    const newlocationreviews = new reviewModel(review);
+async postlocationreviews(Object) {
+    const newlocationreviews = new  locationreviewsModel(Object);
     return await newlocationreviews.save();
 }
                         
-async getlocationreviews(req, res, next) {
+async getlocationreviews(id) {
     return await locationreviewsModel.findById(id);
 }
                         
