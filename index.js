@@ -83,8 +83,6 @@ const { writeFile, ensureDir, pathExists } = pkg;
                     for (let j = 0; j < Object.keys(first).length; j++) {
 
 
-
-
                         if (Object.keys(first)[j] == "get") {
 
                             let parameters = ""
@@ -251,19 +249,11 @@ const { writeFile, ensureDir, pathExists } = pkg;
     }
 
 
-
-
-
-    await writeFile(pathJoin(ROUTES_DIR, `${title}.routes.js`), `
-    const express = require('express');
-    
+    await writeFile(pathJoin(ROUTES_DIR, `${title}.routes.js`),
+        `const express = require('express');
     const router = express.Router();
-    const ${title}Controller = new ${title}controller();
     const reviewValidator = require('../validation/review')
     const { validate } = require('express-validation');
-    
-    
-    
         ${(function createPaths() {
             let result = ""
 
@@ -318,13 +308,8 @@ const ${ordersSwagger.tags[i].name}Controller=new ${ordersSwagger.tags[i].name}(
             return result
         })()
         }
-
-
-
-
 module.exports = router;
 `);
-    //router.get('/', reviewController.getReviews);
 
     await writeFile(pathJoin(VALIDATION_DIR, `${title}.validation.js`), format.sync(`
 const joi = require('joi');
