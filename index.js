@@ -4,6 +4,7 @@ import pkg from 'fs-extra';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { join as pathJoin } from 'path';
 import { doesNotMatch } from "assert";
+import format from 'prettier-format'
 import { Console } from "console";
 const ordersSwagger = require('./swaggerFiles/FullDocumantation.json')
 
@@ -63,7 +64,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
         //console.log(thisControllerPaths)
 
 
-        await writeFile(pathJoin(CONTROLLERS_DIR, `${pathname}.controller.js`), `
+        await writeFile(pathJoin(CONTROLLERS_DIR, `${pathname}.controller.js`), format.sync(`
         const ${pathname}Service = require('../services/${pathname}.service');
         const service = new ${pathname}Service();
         
@@ -82,7 +83,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
                     for (let j = 0; j < Object.keys(first).length; j++) {
 
 
-                        //console.log(first[j])
+
 
                         if (Object.keys(first)[j] == "get") {
 
@@ -168,12 +169,12 @@ const { writeFile, ensureDir, pathExists } = pkg;
         
         }
         module.exports = ${pathname}Controller;
-        `    );
+        `   ));
 
 
 
 
-        await writeFile(pathJoin(SERVICES_DIR, `${pathname}.service.js`), `
+        await writeFile(pathJoin(SERVICES_DIR, `${pathname}.service.js`), format.sync(`
         const ${pathname}Model = require('../models/review')
         
         class ${pathname}Service {
@@ -244,8 +245,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
         }
         
         module.exports = ${pathname}Service;
-        `);
-
+        `));
 
 
     }
@@ -253,25 +253,63 @@ const { writeFile, ensureDir, pathExists } = pkg;
 
 
 
+
     await writeFile(pathJoin(ROUTES_DIR, `${title}.routes.js`), `
-const express = require('express');
-const ${title}controller = require('../controllers/${title}.controller.js');
-const router = express.Router();
-const ${title}Controller = new ${title}controller();
-const reviewValidator = require('../validation/review')
-const { validate } = require('express-validation');
-
-
-
-    ${(function createPaths() {
+    const express = require('express');
+    
+    const router = express.Router();
+    const ${title}Controller = new ${title}controller();
+    const reviewValidator = require('../validation/review')
+    const { validate } = require('express-validation');
+    
+    
+    
+        ${(function createPaths() {
             let result = ""
-            for (let i = 0; i < paths.length; i++) {
-                const path = ordersSwagger.paths[Object.keys(ordersSwagger.paths)[i]]
 
-                for (let j = 0; j < Object.keys(path).length; j++) {
+            for (let i = 0; i < ordersSwagger.tags.length; i++) {
+
+                result = result.concat(`
+const ${ordersSwagger.tags[i].name} = require('../controllers/${ordersSwagger.tags[i].name}.controller.js');
+const ${ordersSwagger.tags[i].name}Controller=new ${ordersSwagger.tags[i].name}() \n`)
+            }
+            result = result.concat(`\n  \n`)
+            const first = ordersSwagger.paths
+            let pathname
+            for (let i = 0; i < Object.keys(ordersSwagger.tags).length; i++) {
+                pathname = ordersSwagger.tags[i].name
+                let thisControllerPaths = [];
+                // console.log(ordersSwagger.paths)
+                for (let j = 0; j < paths.length; j++) {
+                    // console.log(Object.keys(ordersSwagger.paths)[j].slice(1, pathname.length + 1))
+
+                    if (Object.keys(ordersSwagger.paths)[j].slice(1, pathname.length + 1) == `${pathname}`) {
+                        const hello = ordersSwagger.paths[Object.keys(ordersSwagger.paths)[j]]
+                        for (let z = 0; z < Object.keys(hello).length; z++) {
 
 
-                    result = result.concat(`router.${Object.keys(path)[j]}('${Object.keys(ordersSwagger.paths)[i]}', ${title}Controller.${Object.keys(path)[j]}${title});\n`)
+                            let parameters = ""
+                            let id = ""
+                            let found = false
+
+                            if (Object.keys(hello)[z] == 'get') {
+
+                                const operation = hello[Object.keys(hello)[z]];
+
+                                if (operation.hasOwnProperty("parameters")) {
+
+                                    found = true
+                                    id = id.concat(`${operation.parameters[0].name}`);
+
+                                    parameters = parameters.concat(`by${id}`);
+                                }
+                            }
+                            result = result.concat(`router.${Object.keys(hello)[z]}('${Object.keys(ordersSwagger.paths)[j]}',${pathname}Controller.${Object.keys(hello)[z]}${pathname}${parameters});  \n`)
+
+                        }
+
+
+                    }
 
                 }
 
@@ -286,13 +324,13 @@ const { validate } = require('express-validation');
 
 module.exports = router;
 `);
+    //router.get('/', reviewController.getReviews);
 
-
-    await writeFile(pathJoin(VALIDATION_DIR, `${title}.validation.js`), `
+    await writeFile(pathJoin(VALIDATION_DIR, `${title}.validation.js`), format.sync(`
 const joi = require('joi');
 
 const ${title}Validation = {
-        ${(function CreateValidation() {
+    ${(function CreateValidation() {
 
             let result = ""
             for (let i = 0; i < paths.length; i++) {
@@ -359,7 +397,7 @@ const ${title}Validation = {
         }
 }
 module.exports = ${title}Validation;
-`    );
+`    ));
 
 
 

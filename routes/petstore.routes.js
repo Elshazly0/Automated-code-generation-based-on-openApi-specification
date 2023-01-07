@@ -1,6 +1,6 @@
 
 const express = require('express');
-const petstorecontroller = require('../controllers/petstore.controller.js');
+
 const router = express.Router();
 const petstoreController = new petstorecontroller();
 const reviewValidator = require('../validation/review')
@@ -8,25 +8,36 @@ const { validate } = require('express-validation');
 
 
 
-router.put('/pet', petstoreController.putpetstore);
-router.post('/pet', petstoreController.postpetstore);
-router.get('/pet/findByStatus', petstoreController.getpetstore);
-router.get('/pet/findByTags', petstoreController.getpetstore);
-router.get('/pet/{petId}', petstoreController.getpetstore);
-router.post('/pet/{petId}', petstoreController.postpetstore);
-router.delete('/pet/{petId}', petstoreController.deletepetstore);
-router.post('/pet/{petId}/uploadImage', petstoreController.postpetstore);
-router.get('/store/inventory', petstoreController.getpetstore);
-router.post('/store/order', petstoreController.postpetstore);
-router.get('/store/order/{orderId}', petstoreController.getpetstore);
-router.delete('/store/order/{orderId}', petstoreController.deletepetstore);
-router.post('/user', petstoreController.postpetstore);
-router.post('/user/createWithList', petstoreController.postpetstore);
-router.get('/user/login', petstoreController.getpetstore);
-router.get('/user/logout', petstoreController.getpetstore);
-router.get('/user/{username}', petstoreController.getpetstore);
-router.put('/user/{username}', petstoreController.putpetstore);
-router.delete('/user/{username}', petstoreController.deletepetstore);
+
+const pet = require('../controllers/pet.controller.js');
+const petController = new pet()
+
+const store = require('../controllers/store.controller.js');
+const storeController = new store()
+
+const user = require('../controllers/user.controller.js');
+const userController = new user()
+
+
+router.put('/pet', petController.putpet);
+router.post('/pet', petController.postpet);
+router.get('/pet/findByStatus', petController.getpetbystatus);
+router.get('/pet/findByTags', petController.getpetbytags);
+router.get('/pet/{petId}', petController.getpetbypetId);
+router.post('/pet/{petId}', petController.postpet);
+router.delete('/pet/{petId}', petController.deletepet);
+router.post('/pet/{petId}/uploadImage', petController.postpet);
+router.get('/store/inventory', storeController.getstore);
+router.post('/store/order', storeController.poststore);
+router.get('/store/order/{orderId}', storeController.getstorebyorderId);
+router.delete('/store/order/{orderId}', storeController.deletestore);
+router.post('/user', userController.postuser);
+router.post('/user/createWithList', userController.postuser);
+router.get('/user/login', userController.getuserbyusername);
+router.get('/user/logout', userController.getuser);
+router.get('/user/{username}', userController.getuserbyusername);
+router.put('/user/{username}', userController.putuser);
+router.delete('/user/{username}', userController.deleteuser);
 
 
 

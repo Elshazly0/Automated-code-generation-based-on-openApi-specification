@@ -6,14 +6,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon  index.js"
+    "start": "nodemon  index.js",
+    "format": "npx prettier --write ."
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
     "fs-extra": "^10.1.0",
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "prettier-format": "^3.1.0"
   },
   "nodemonConfig": {
     "ignore": [
@@ -33,5 +35,15 @@
       "validation/petstore.validation.js"
     ],
     "delay": "2"
+  },
+  "devDependencies": {
+    "husky": "^8.0.2",
+    "prettier": "^2.8.1",
+    "pretty-quick": "^3.1.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
   }
 }
