@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
+  "main": "APICodeGeneration.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon  index.js",
+    "start": "nodemon  APICodeGeneration.js",
     "format": "npx prettier --write ."
   },
   "author": "",

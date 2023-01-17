@@ -3,10 +3,8 @@ const require = createRequire(import.meta.url);
 import pkg from 'fs-extra';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { join as pathJoin } from 'path';
-import { doesNotMatch } from "assert";
 import format from 'prettier-format'
-import { Console } from "console";
-const ordersSwagger = require('./swaggerFiles/FullDocumantation.json')
+const OpenApiDocumentation = require('./Documentation/FullDocumantation.json')
 
 
 const { writeFile, ensureDir, pathExists } = pkg;
@@ -14,31 +12,14 @@ const { writeFile, ensureDir, pathExists } = pkg;
 
 
 (async () => {
-    if (!(await SwaggerParser.validate(ordersSwagger))) {
+    if (!(await SwaggerParser.validate(OpenApiDocumentation))) {
         throw Error('Invalid Swagger');
     }
-    // console.log('===========')
-    // console.log('Serialized:')
-    // console.log('===========')
-    // console.log(JSON.stringify(ordersSwagger));
-    // console.log('==========')
-    // console.log('Formatted:')
-    // console.log('==========')
 
 
 
-    const paths = await Object.keys(ordersSwagger.paths);
-    //  console.log(ordersSwagger)
-    const firstPath = await ordersSwagger.paths[Object.keys(ordersSwagger.paths)];
-    // const firstPathmethod = Object.keys(firstPath)[0]
-    const path = ordersSwagger.paths[Object.keys(ordersSwagger.paths)[0]];
-    const first = path[Object.keys(path)[0]]
-    //console.log(Object.keys(first))
-
-    //console.log(ordersSwagger.paths["/reviews"].get.responses[200].content)
-
-
-    const title = ordersSwagger.info.title.toLowerCase();
+    const DocumentationPaths = await Object.keys(OpenApiDocumentation.paths);
+    const title = OpenApiDocumentation.info.title.toLowerCase();
 
     const APP_ROOT_DIR = pathJoin(process.cwd());
     const CONTROLLERS_DIR = pathJoin(APP_ROOT_DIR, 'controllers');
@@ -49,19 +30,19 @@ const { writeFile, ensureDir, pathExists } = pkg;
 
 
     let pathname;
-    for (let i = 0; i < ordersSwagger.tags.length; i++) {
-        pathname = ordersSwagger.tags[i].name
-        let thisControllerPaths = [];
-        // console.log(ordersSwagger.paths)
-        for (let j = 0; j < paths.length; j++) {
-            // console.log(Object.keys(ordersSwagger.paths)[j].slice(1, pathname.length + 1))
+    for (let i = 0; i < OpenApiDocumentation.tags.length; i++) {
+        pathname = OpenApiDocumentation.tags[i].name
+        let AllPaths = [];
+        // console.log(OpenApiDocumentation.paths)
+        for (let j = 0; j < DocumentationPaths.length; j++) {
+            // console.log(Object.keys(OpenApiDocumentation.paths)[j].slice(1, tag.length + 1))
 
-            if (Object.keys(ordersSwagger.paths)[j].slice(1, pathname.length + 1) == `${pathname}`) {
-                thisControllerPaths.push(Object.keys(ordersSwagger.paths)[j])
+            if (Object.keys(OpenApiDocumentation.paths)[j].slice(1, pathname.length + 1) == `${pathname}`) {
+                AllPaths.push(Object.keys(OpenApiDocumentation.paths)[j])
             }
 
         }
-        //console.log(thisControllerPaths)
+
 
 
         await writeFile(pathJoin(CONTROLLERS_DIR, `${pathname}.controller.js`), format.sync(`
@@ -74,32 +55,32 @@ const { writeFile, ensureDir, pathExists } = pkg;
               
         
                 ${(function CreateController() {
-                let result = ""
+                let controllerSourceCode = ""
 
                 // console.log(paths)
-                for (let i = 0; i < thisControllerPaths.length; i++) {
-                    const first = ordersSwagger.paths[thisControllerPaths[i]]
+                for (let i = 0; i < AllPaths.length; i++) {
+                    const PathObject = OpenApiDocumentation.paths[AllPaths[i]]
 
-                    for (let j = 0; j < Object.keys(first).length; j++) {
+                    for (let j = 0; j < Object.keys(PathObject).length; j++) {
 
 
-                        if (Object.keys(first)[j] == "get") {
+                        if (Object.keys(PathObject)[j] == "get") {
 
                             let parameters = ""
                             let id = ""
-                            let found = false
-                            if (first[Object.keys(first)[j]].hasOwnProperty("parameters")) {
-                                found = true
-                                // console.log(first[Object.keys(first)[j]])
-                                id = id.concat(`${first[Object.keys(first)[j]].parameters[0].name}`);
+                            let parametersFound = false
+                            if (PathObject[Object.keys(PathObject)[j]].hasOwnProperty("parameters")) {
+                                parametersFound = true
+                                // console.log(PathObject[Object.keys(PathObject)[j]])
+                                id = id.concat(`${PathObject[Object.keys(PathObject)[j]].parameters[0].name}`);
 
                                 parameters = parameters.concat(`const id = req.query.${id};`);
                             }
 
-                            result = result.concat(`
-            async ${Object.keys(first)[j]}${pathname}${found ? `by${id}` : ""} (req, res, next) {
+                            controllerSourceCode = controllerSourceCode.concat(`
+            async ${Object.keys(PathObject)[j]}${pathname}${parametersFound ? `by${id}` : ""} (req, res, next) {
                 ${parameters}
-                const result = await ${pathname}Service.get${pathname}${found ? `by${id}` : ""} (${id});
+                const result = await ${pathname}Service.get${pathname}${parametersFound ? `by${id}` : ""} (${id});
 
         if (result) {
             res.send(result)
@@ -113,11 +94,11 @@ const { writeFile, ensureDir, pathExists } = pkg;
                         }
 
 
-                        if (Object.keys(first)[j] == "post") {
+                        if (Object.keys(PathObject)[j] == "post") {
 
 
-                            result = result.concat(`
-            async ${Object.keys(first)[j]}${pathname} (req, res, next) {
+                            controllerSourceCode = controllerSourceCode.concat(`
+            async ${Object.keys(PathObject)[j]}${pathname} (req, res, next) {
 
         let body = req.body;
 
@@ -134,11 +115,11 @@ const { writeFile, ensureDir, pathExists } = pkg;
     }
     `)
                         }
-                        if (Object.keys(first)[j] == "delete") {
+                        if (Object.keys(PathObject)[j] == "delete") {
 
 
-                            result = result.concat(`
-            async ${Object.keys(first)[j]}${pathname} (req, res, next) {
+                            controllerSourceCode = controllerSourceCode.concat(`
+            async ${Object.keys(PathObject)[j]}${pathname} (req, res, next) {
 
         const id = req.query.id;
 
@@ -158,7 +139,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
                     }
                 }
 
-                return result
+                return controllerSourceCode
 
 
             })()}
@@ -181,46 +162,46 @@ const { writeFile, ensureDir, pathExists } = pkg;
         
             ${(function CreateService() {
 
-                let result = ""
+                let serviceSourceCode = ""
 
                 // console.log(paths)
-                for (let i = 0; i < thisControllerPaths.length; i++) {
-                    const first = ordersSwagger.paths[thisControllerPaths[i]]
+                for (let i = 0; i < AllPaths.length; i++) {
+                    const PathObject = OpenApiDocumentation.paths[AllPaths[i]]
 
-                    for (let j = 0; j < Object.keys(first).length; j++) {
-                        //  console.log(Object.keys(first)[j])
+                    for (let j = 0; j < Object.keys(PathObject).length; j++) {
+                        //console.log(Object.keys(PathObject)[j])
                         let parameters = ""
-                        if (Object.keys(first)[j] == "get") {
+                        if (Object.keys(PathObject)[j] == "get") {
 
 
                             let id = ""
-                            let found = false
-                            if (first[Object.keys(first)[j]].hasOwnProperty("parameters")) {
-                                found = true
-                                id = id.concat(`${first[Object.keys(first)[j]].parameters[0].name}`);
+                            let parametersFound = false
+                            if (PathObject[Object.keys(PathObject)[j]].hasOwnProperty("parameters")) {
+                                parametersFound = true
+                                id = id.concat(`${PathObject[Object.keys(PathObject)[j]].parameters[0].name}`);
 
                                 parameters = parameters.concat(``);
                             }
 
-                            result = result.concat(`
-        async ${Object.keys(first)[j]}${pathname}${found ? `by${id}` : ""}(${found ? `${id}` : ""}) {
+                            serviceSourceCode = serviceSourceCode.concat(`
+        async ${Object.keys(PathObject)[j]}${pathname}${parametersFound ? `by${id}` : ""}(${parametersFound ? `${id}` : ""}) {
             ${parameters ? parameters : `return await ${pathname}Model.find({});`}
         }
                                 `)
                         }
-                        if (Object.keys(first)[j] == "post") {
+                        if (Object.keys(PathObject)[j] == "post") {
 
 
-                            result = result.concat(`
-        async ${Object.keys(first)[j]}${pathname}(Object) {
+                            serviceSourceCode = serviceSourceCode.concat(`
+        async ${Object.keys(PathObject)[j]}${pathname}(Object) {
             const new${pathname} = new  ${pathname}Model(Object);
             return await new${pathname}.save();
         }
                                 `)
                         }
-                        if (Object.keys(first)[j] == "delete") {
-                            result = result.concat(`
-        async ${Object.keys(first)[j]}${pathname}(id) {
+                        if (Object.keys(PathObject)[j] == "delete") {
+                            serviceSourceCode = serviceSourceCode.concat(`
+        async ${Object.keys(PathObject)[j]}${pathname}(id) {
             return await ${pathname}Model.findByIdAndDelete(id);
         
                                 }
@@ -238,7 +219,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
                     }
                 }
 
-                return result
+                return serviceSourceCode
             })()}
         }
         
@@ -255,32 +236,32 @@ const { writeFile, ensureDir, pathExists } = pkg;
     const reviewValidator = require('../validation/review')
     const { validate } = require('express-validation');
         ${(function createPaths() {
-            let result = ""
+            let routesSourceCode = ""
 
-            for (let i = 0; i < ordersSwagger.tags.length; i++) {
+            for (let i = 0; i < OpenApiDocumentation.tags.length; i++) {
 
-                result = result.concat(`
-const ${ordersSwagger.tags[i].name} = require('../controllers/${ordersSwagger.tags[i].name}.controller.js');
-const ${ordersSwagger.tags[i].name}Controller=new ${ordersSwagger.tags[i].name}() \n`)
+                routesSourceCode = routesSourceCode.concat(`
+const ${OpenApiDocumentation.tags[i].name} = require('../controllers/${OpenApiDocumentation.tags[i].name}.controller.js');
+const ${OpenApiDocumentation.tags[i].name}Controller=new ${OpenApiDocumentation.tags[i].name}() \n`)
             }
-            result = result.concat(`\n  \n`)
-            const first = ordersSwagger.paths
+            routesSourceCode = routesSourceCode.concat(`\n  \n`)
+            const PathObject = OpenApiDocumentation.paths
             let pathname
-            for (let i = 0; i < Object.keys(ordersSwagger.tags).length; i++) {
-                pathname = ordersSwagger.tags[i].name
-                let thisControllerPaths = [];
-                // console.log(ordersSwagger.paths)
-                for (let j = 0; j < paths.length; j++) {
-                    // console.log(Object.keys(ordersSwagger.paths)[j].slice(1, pathname.length + 1))
+            for (let i = 0; i < Object.keys(OpenApiDocumentation.tags).length; i++) {
+                pathname = OpenApiDocumentation.tags[i].name
+                let AllPaths = [];
+                // console.log(OpenApiDocumentation.paths)
+                for (let j = 0; j < DocumentationPaths.length; j++) {
+                    // console.log(Object.keys(OpenApiDocumentation.paths)[j].slice(1, pathname.length + 1))
 
-                    if (Object.keys(ordersSwagger.paths)[j].slice(1, pathname.length + 1) == `${pathname}`) {
-                        const hello = ordersSwagger.paths[Object.keys(ordersSwagger.paths)[j]]
+                    if (Object.keys(OpenApiDocumentation.paths)[j].slice(1, pathname.length + 1) == `${pathname}`) {
+                        const hello = OpenApiDocumentation.paths[Object.keys(OpenApiDocumentation.paths)[j]]
                         for (let z = 0; z < Object.keys(hello).length; z++) {
 
 
                             let parameters = ""
                             let id = ""
-                            let found = false
+                            let parametersFound = false
 
                             if (Object.keys(hello)[z] == 'get') {
 
@@ -288,13 +269,13 @@ const ${ordersSwagger.tags[i].name}Controller=new ${ordersSwagger.tags[i].name}(
 
                                 if (operation.hasOwnProperty("parameters")) {
 
-                                    found = true
+                                    parametersFound = true
                                     id = id.concat(`${operation.parameters[0].name}`);
 
                                     parameters = parameters.concat(`by${id}`);
                                 }
                             }
-                            result = result.concat(`router.${Object.keys(hello)[z]}('${Object.keys(ordersSwagger.paths)[j]}',${pathname}Controller.${Object.keys(hello)[z]}${pathname}${parameters});  \n`)
+                            routesSourceCode = routesSourceCode.concat(`router.${Object.keys(hello)[z]}('${Object.keys(OpenApiDocumentation.paths)[j]}',${pathname}Controller.${Object.keys(hello)[z]}${pathname}${parameters});  \n`)
 
                         }
 
@@ -305,7 +286,7 @@ const ${ordersSwagger.tags[i].name}Controller=new ${ordersSwagger.tags[i].name}(
 
             }
 
-            return result
+            return routesSourceCode
         })()
         }
 module.exports = router;
@@ -317,14 +298,14 @@ const joi = require('joi');
 const ${title}Validation = {
     ${(function CreateValidation() {
 
-            let result = ""
-            for (let i = 0; i < paths.length; i++) {
-                const path = ordersSwagger.paths[Object.keys(ordersSwagger.paths)[i]]
+            let validationSourceCode = ""
+            for (let i = 0; i < DocumentationPaths.length; i++) {
+                const path = OpenApiDocumentation.paths[Object.keys(OpenApiDocumentation.paths)[i]]
 
 
                 for (let j = 0; j < Object.keys(path).length; j++) {
-                    const first = path[Object.keys(path)[j]]
-                    //console.log(first)
+                    const PathObject = path[Object.keys(path)[j]]
+                    //console.log(PathObject)
 
 
 
@@ -340,7 +321,7 @@ const ${title}Validation = {
                             if (one.requestBody.content.hasOwnProperty('application/json')) {
 
                                 if (one.requestBody.content['application/json'].schema.hasOwnProperty('required')) {
-                                    result = result.concat(`
+                                    validationSourceCode = validationSourceCode.concat(`
     create${one.requestBody.content['application/json'].schema.xml.name}: {
                                         `)
                                     const parameters = one.requestBody.content['application/json'].schema.required
@@ -349,14 +330,12 @@ const ${title}Validation = {
                                         //console.log(one.requestBody.content['application/json'].schema.xml.name)
                                         const required = one.requestBody.content['application/json'].schema.properties
                                         //console.log(required[parameters[0]])
-                                        result = result.concat(`
+                                        validationSourceCode = validationSourceCode.concat(`
         ${parameters[z]}: joi.${required[parameters[z]].type}().required(),`)
-
-
 
                                     }
 
-                                    result = result.concat(`
+                                    validationSourceCode = validationSourceCode.concat(`
                                 
     }
         
@@ -375,7 +354,7 @@ const ${title}Validation = {
                     }
                 }
             }
-            return result
+            return validationSourceCode
 
 
         })()
