@@ -273,6 +273,7 @@ const ${OpenApiDocumentation.tags[i].name}Controller=new ${OpenApiDocumentation.
 
                                 if (operation.hasOwnProperty("requestBody")) {
                                     if (operation.requestBody.content.hasOwnProperty('application/json')) {
+
                                         if (operation.requestBody.content['application/json'].schema.hasOwnProperty('required')) {
                                             validateRequired = true
                                             validatation = `create${operation.requestBody.content['application/json'].schema.xml.name}`

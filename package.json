@@ -24,6 +24,7 @@
       "controllers/petstore.controller.js",
       "controllers/pet.controller.js",
       "controllers/store.controller.js",
+      "controllers/reviews.controller.js",
       "controllers/user.controller.js",
       "controllers/locationreviews.controller.js",
       "services/petstore.service.js",
@@ -31,7 +32,9 @@
       "services/pet.service.js",
       "services/user.service.js",
       "services/store.service.js",
+      "services/reviews.service.js",
       "routes/petstore.routes.js",
+      "routes/locationreviews.routes.js",
       "routes/locationreviews.routes.js",
       "validation/locationreviews.validation.js",
       "validation/petstore.validation.js"

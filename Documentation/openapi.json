@@ -10,6 +10,16 @@
       "url": "http://localhost:3000"
     }
   ],
+  "tags": [
+    {
+      "name": "reviews",
+      "description": "Everything about your reviews",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "http://swagger.io"
+      }
+    }
+  ],
   "paths": {
     "/reviews": {
       "get": {
