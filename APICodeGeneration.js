@@ -266,7 +266,7 @@ const ${OpenApiDocumentation.tags[i].name}Controller=new ${OpenApiDocumentation.
                                     parameters = parameters.concat(`by${id}`);
                                 }
                             }
-                            routesSourceCode = routesSourceCode.concat(`router.${Object.keys(hello)[z]}('${Object.keys(OpenApiDocumentation.paths)[j]}',${pathname}Controller.${Object.keys(hello)[z]}${pathname}${parameters});  \n`)
+                            routesSourceCode = routesSourceCode.concat(`router.${Object.keys(hello)[z]}('${Object.keys(OpenApiDocumentation.paths)[j].replace('{', ':').replace('}', '')}',${pathname}Controller.${Object.keys(hello)[z]}${pathname}${parameters});  \n`)
                         }
                     }
                 }
