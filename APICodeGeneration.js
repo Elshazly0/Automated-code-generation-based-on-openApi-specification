@@ -1,6 +1,6 @@
 import { createRequire } from "module";
-const require = createRequire(import.meta.url);
 import pkg from 'fs-extra';
+const require = createRequire(import.meta.url);
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { join as pathJoin } from 'path';
 import format from 'prettier-format'
@@ -16,6 +16,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
         throw Error('Invalid Swagger');
     }
 
+    console.log(OpenApiDocumentation)
 
 
     const DocumentationPaths = await Object.keys(OpenApiDocumentation.paths);
@@ -237,9 +238,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
     const { validate } = require('express-validation');
         ${(function createPaths() {
             let routesSourceCode = ""
-
             for (let i = 0; i < OpenApiDocumentation.tags.length; i++) {
-
                 routesSourceCode = routesSourceCode.concat(`
 const ${OpenApiDocumentation.tags[i].name} = require('../controllers/${OpenApiDocumentation.tags[i].name}.controller.js');
 const ${OpenApiDocumentation.tags[i].name}Controller=new ${OpenApiDocumentation.tags[i].name}() \n`)
@@ -253,39 +252,25 @@ const ${OpenApiDocumentation.tags[i].name}Controller=new ${OpenApiDocumentation.
                 // console.log(OpenApiDocumentation.paths)
                 for (let j = 0; j < DocumentationPaths.length; j++) {
                     // console.log(Object.keys(OpenApiDocumentation.paths)[j].slice(1, pathname.length + 1))
-
                     if (Object.keys(OpenApiDocumentation.paths)[j].slice(1, pathname.length + 1) == `${pathname}`) {
                         const hello = OpenApiDocumentation.paths[Object.keys(OpenApiDocumentation.paths)[j]]
                         for (let z = 0; z < Object.keys(hello).length; z++) {
-
-
                             let parameters = ""
                             let id = ""
                             let parametersFound = false
-
                             if (Object.keys(hello)[z] == 'get') {
-
                                 const operation = hello[Object.keys(hello)[z]];
-
                                 if (operation.hasOwnProperty("parameters")) {
-
                                     parametersFound = true
                                     id = id.concat(`${operation.parameters[0].name}`);
-
                                     parameters = parameters.concat(`by${id}`);
                                 }
                             }
                             routesSourceCode = routesSourceCode.concat(`router.${Object.keys(hello)[z]}('${Object.keys(OpenApiDocumentation.paths)[j]}',${pathname}Controller.${Object.keys(hello)[z]}${pathname}${parameters});  \n`)
-
                         }
-
-
                     }
-
                 }
-
             }
-
             return routesSourceCode
         })()
         }
