@@ -186,7 +186,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
 
                             serviceSourceCode = serviceSourceCode.concat(`
         async ${Object.keys(PathObject)[j]}${pathname}${parametersFound ? `by${id}` : ""}(${parametersFound ? `${id}` : ""}) {
-            ${parameters ? parameters : `return await ${id}`}
+            ${parameters ? parameters : `return await ${pathname}`}
         }
                                 `)
                         }
@@ -196,7 +196,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
                             serviceSourceCode = serviceSourceCode.concat(`
         async ${Object.keys(PathObject)[j]}${pathname}(Object) {
             const new${pathname} = new  ${pathname}Model(Object);
-            return await ${pathname};
+            return await new${pathname};
         }
                                 `)
                         }

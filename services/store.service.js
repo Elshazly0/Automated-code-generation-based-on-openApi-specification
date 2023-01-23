@@ -2,20 +2,20 @@ const storeModel = require("../models/review");
 
 class storeService {
   async getstore() {
-    return await storeModel.find({});
+    return await store;
   }
 
   async poststore(Object) {
     const newstore = new storeModel(Object);
-    return await newstore.save();
+    return await newstore;
   }
 
   async getstorebyorderId(orderId) {
-    return await storeModel.find({});
+    return await store;
   }
 
   async deletestore(id) {
-    return await storeModel.findByIdAndDelete(id);
+    return await store;
   }
 }
 
