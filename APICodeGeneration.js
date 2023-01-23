@@ -366,7 +366,7 @@ const ${title}Validation = {
         })()
         }
 }
-module.exports = ${title} Validation;
+module.exports = ${title}Validation;
 `    ));
 
 
