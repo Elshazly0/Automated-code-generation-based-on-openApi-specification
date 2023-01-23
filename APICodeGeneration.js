@@ -16,7 +16,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
         throw Error('Invalid Swagger');
     }
 
-    console.log(OpenApiDocumentation)
+    //console.log(OpenApiDocumentation)
 
 
     const DocumentationPaths = await Object.keys(OpenApiDocumentation.paths);
@@ -186,7 +186,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
 
                             serviceSourceCode = serviceSourceCode.concat(`
         async ${Object.keys(PathObject)[j]}${pathname}${parametersFound ? `by${id}` : ""}(${parametersFound ? `${id}` : ""}) {
-            ${parameters ? parameters : `return await ${pathname}Model.find({});`}
+            ${parameters ? parameters : `return await ${id}`}
         }
                                 `)
                         }
@@ -196,14 +196,14 @@ const { writeFile, ensureDir, pathExists } = pkg;
                             serviceSourceCode = serviceSourceCode.concat(`
         async ${Object.keys(PathObject)[j]}${pathname}(Object) {
             const new${pathname} = new  ${pathname}Model(Object);
-            return await new${pathname}.save();
+            return await ${pathname};
         }
                                 `)
                         }
                         if (Object.keys(PathObject)[j] == "delete") {
                             serviceSourceCode = serviceSourceCode.concat(`
         async ${Object.keys(PathObject)[j]}${pathname}(id) {
-            return await ${pathname}Model.findByIdAndDelete(id);
+            return await ${pathname};
         
                                 }
                                  `)
@@ -234,7 +234,7 @@ const { writeFile, ensureDir, pathExists } = pkg;
     await writeFile(pathJoin(ROUTES_DIR, `${title}.routes.js`),
         `const express = require('express');
     const router = express.Router();
-    const reviewValidator = require('../validation/review')
+    const ${title}Validator = require('../validation/review')
     const { validate } = require('express-validation');
         ${(function createPaths() {
             let routesSourceCode = ""
@@ -266,7 +266,28 @@ const ${OpenApiDocumentation.tags[i].name}Controller=new ${OpenApiDocumentation.
                                     parameters = parameters.concat(`by${id}`);
                                 }
                             }
-                            routesSourceCode = routesSourceCode.concat(`router.${Object.keys(hello)[z]}('${Object.keys(OpenApiDocumentation.paths)[j].replace('{', ':').replace('}', '')}',${pathname}Controller.${Object.keys(hello)[z]}${pathname}${parameters});  \n`)
+                            let validateRequired = false;
+                            let validatation = ""
+                            if (Object.keys(hello)[z] == 'post') {
+                                const operation = hello[Object.keys(hello)[z]];
+
+                                if (operation.hasOwnProperty("requestBody")) {
+                                    if (operation.requestBody.content.hasOwnProperty('application/json')) {
+                                        if (operation.requestBody.content['application/json'].schema.hasOwnProperty('required')) {
+                                            validateRequired = true
+                                            validatation = `create${operation.requestBody.content['application/json'].schema.xml.name}`
+                                        }
+                                    }
+
+
+                                }
+
+
+                            }
+
+
+
+                            routesSourceCode = routesSourceCode.concat(`router.${Object.keys(hello)[z]}('${Object.keys(OpenApiDocumentation.paths)[j].replace('{', ':').replace('}', '')}',${validateRequired ? `validate(${title}Validator.${validatation}),` : " "}  ${pathname}Controller.${Object.keys(hello)[z]}${pathname}${parameters});  \n`)
                         }
                     }
                 }
@@ -345,7 +366,7 @@ const ${title}Validation = {
         })()
         }
 }
-module.exports = ${title}Validation;
+module.exports = ${title} Validation;
 `    ));
 
 

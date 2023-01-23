@@ -3,33 +3,33 @@ const petModel = require("../models/review");
 class petService {
   async postpet(Object) {
     const newpet = new petModel(Object);
-    return await newpet.save();
+    return await pet;
   }
 
   async getpetbystatus(status) {
-    return await petModel.find({});
+    return await status;
   }
 
   async getpetbytags(tags) {
-    return await petModel.find({});
+    return await tags;
   }
 
   async getpetbypetId(petId) {
-    return await petModel.find({});
+    return await petId;
   }
 
   async postpet(Object) {
     const newpet = new petModel(Object);
-    return await newpet.save();
+    return await pet;
   }
 
   async deletepet(id) {
-    return await petModel.findByIdAndDelete(id);
+    return await pet;
   }
 
   async postpet(Object) {
     const newpet = new petModel(Object);
-    return await newpet.save();
+    return await pet;
   }
 }
 
